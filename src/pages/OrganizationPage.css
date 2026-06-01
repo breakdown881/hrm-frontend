@@ -1,0 +1,139 @@
+.organization-heading {
+  margin-bottom: 16px;
+}
+
+.organization-heading p:not(.eyebrow) {
+  max-width: 760px;
+  color: #475569;
+}
+
+.organization-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.organization-stat-card {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+
+.organization-stat-card span {
+  color: #64748b;
+  font-weight: 800;
+}
+
+.organization-stat-card strong {
+  color: #0f172a;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.organization-stat-card p {
+  margin-bottom: 0;
+  color: #475569;
+}
+
+.organization-card {
+  align-self: start;
+}
+
+.organization-form {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  border-radius: 20px;
+  background: rgba(239, 246, 255, 0.72);
+}
+
+.organization-form label {
+  display: grid;
+  gap: 6px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: left;
+}
+
+.organization-form input,
+.organization-form select {
+  min-height: 44px;
+  width: 100%;
+  padding: 0 14px;
+  border: 1px solid rgba(148, 163, 184, 0.34);
+  border-radius: 14px;
+  color: #0f172a;
+  outline: 0;
+  background: rgba(248, 250, 252, 0.86);
+}
+
+.organization-form input:focus,
+.organization-form select:focus {
+  border-color: rgba(37, 99, 235, 0.68);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.form-error {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+.organization-status {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.organization-status.active {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.organization-status.planning {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.job-title-list {
+  display: grid;
+  gap: 12px;
+}
+
+.job-title-item {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 18px;
+  background: #f8fafc;
+}
+
+.job-title-item strong {
+  color: #0f172a;
+}
+
+.job-title-item span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+@media (max-width: 1180px) {
+  .organization-summary,
+  .organization-form {
+    grid-template-columns: 1fr;
+  }
+}

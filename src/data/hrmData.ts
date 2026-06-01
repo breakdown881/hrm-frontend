@@ -5,10 +5,12 @@ export type ModuleId =
   | 'dashboard'
   | 'organization'
   | 'employees'
+  | 'contracts'
   | 'recruitment'
   | 'onboarding'
   | 'attendance'
   | 'leave'
+  | 'notifications'
   | 'performance'
   | 'payroll'
   | 'reports'
@@ -83,6 +85,15 @@ export const modules: Module[] = [
     priority: 'Must-have',
   },
   {
+    id: 'contracts',
+    label: 'Contracts',
+    icon: 'CT',
+    description: 'Employee contracts, contract terms, active status and expiring contract alerts.',
+    progress: 62,
+    owner: 'HR',
+    priority: 'Must-have',
+  },
+  {
     id: 'recruitment',
     label: 'Recruitment',
     icon: 'RE',
@@ -116,6 +127,15 @@ export const modules: Module[] = [
     description: 'Leave requests, approvals, remaining balance and team leave calendar.',
     progress: 76,
     owner: 'Manager / HR',
+    priority: 'Must-have',
+  },
+  {
+    id: 'notifications',
+    label: 'Notifications',
+    icon: 'NT',
+    description: 'In-system alerts for leave decisions, onboarding tasks and expiring contracts.',
+    progress: 58,
+    owner: 'All roles',
     priority: 'Must-have',
   },
   {
@@ -232,10 +252,12 @@ export const moduleRequirements: Record<ModuleId, string[]> = {
   dashboard: ['Role-based overview dashboard', 'Expiring contract widgets', 'Headcount by department chart'],
   organization: ['Department and job title management', 'Direct manager assignment', 'Tree-style organization chart'],
   employees: ['Employee profile CRUD', 'Filter by department and status', 'HR document upload and export'],
+  contracts: ['Create employee contracts', 'Track start/end dates and status', 'Alert expiring contracts'],
   recruitment: ['Job opening and candidate profiles', 'Applied to Hired pipeline', 'Convert hired candidate to employee'],
   onboarding: ['New hire checklist', 'Task owners for each step', 'Onboarding progress tracking'],
   attendance: ['Check-in and check-out', 'Personal and company timesheets', 'Import and approve adjustments'],
   leave: ['Create leave requests', 'Manager and HR approval', 'Balance tracking and team calendar'],
+  notifications: ['In-system notifications', 'Leave decision alerts', 'Onboarding and contract reminders'],
   performance: ['Performance review cycles', 'Self review and manager review', 'Score summary and review history'],
   payroll: ['Monthly payroll runs', 'Allowances, deductions and payslips', 'Locked cycles and payroll permissions'],
   reports: ['People, attendance and leave reports', 'Time and department filters', 'Excel and PDF exports'],
@@ -248,10 +270,10 @@ export const userRoles: UserRole[] = ['Admin', 'HR', 'Manager', 'Employee', 'Pay
 
 export const rolePermissions: Record<UserRole, ModuleId[]> = {
   Admin: modules.map((module) => module.id),
-  HR: ['dashboard', 'organization', 'employees', 'recruitment', 'onboarding', 'attendance', 'leave', 'performance', 'reports', 'settings'],
-  Manager: ['dashboard', 'employees', 'recruitment', 'onboarding', 'attendance', 'leave', 'performance', 'reports'],
-  Employee: ['dashboard', 'attendance', 'leave', 'performance'],
-  'Payroll/Finance': ['dashboard', 'employees', 'attendance', 'leave', 'payroll', 'reports'],
+  HR: ['dashboard', 'organization', 'employees', 'contracts', 'recruitment', 'onboarding', 'attendance', 'leave', 'notifications', 'performance', 'reports', 'settings'],
+  Manager: ['dashboard', 'employees', 'recruitment', 'onboarding', 'attendance', 'leave', 'notifications', 'performance', 'reports'],
+  Employee: ['dashboard', 'attendance', 'leave', 'notifications', 'performance'],
+  'Payroll/Finance': ['dashboard', 'employees', 'attendance', 'leave', 'notifications', 'payroll', 'reports'],
 }
 
 export function canAccessModule(role: UserRole, moduleId: ModuleId) {

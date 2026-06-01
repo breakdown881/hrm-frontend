@@ -1,0 +1,162 @@
+﻿.contract-heading {
+  margin-bottom: 16px;
+}
+
+.contract-heading p:not(.eyebrow) {
+  max-width: 760px;
+  color: #475569;
+}
+
+.contract-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.contract-stat-card {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+
+.contract-stat-card.warning {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: rgba(255, 251, 235, 0.86);
+}
+
+.contract-stat-card span {
+  color: #64748b;
+  font-weight: 800;
+}
+
+.contract-stat-card strong {
+  color: #0f172a;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.contract-stat-card p {
+  margin-bottom: 0;
+  color: #475569;
+}
+
+.contract-card {
+  align-self: start;
+}
+
+.contract-form {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(130px, 1fr)) auto;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  border-radius: 20px;
+  background: rgba(239, 246, 255, 0.72);
+}
+
+.contract-form label {
+  display: grid;
+  gap: 6px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: left;
+}
+
+.contract-form input,
+.contract-form select {
+  min-height: 44px;
+  width: 100%;
+  padding: 0 14px;
+  border: 1px solid rgba(148, 163, 184, 0.34);
+  border-radius: 14px;
+  color: #0f172a;
+  outline: 0;
+  background: rgba(248, 250, 252, 0.86);
+}
+
+.contract-form input:focus,
+.contract-form select:focus {
+  border-color: rgba(37, 99, 235, 0.68);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.form-error {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+.contract-status {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.contract-status.active {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.contract-status.expiring-soon {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.contract-status.expired {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.contract-watchlist {
+  display: grid;
+  gap: 12px;
+}
+
+.contract-watchlist-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  background: #f8fafc;
+}
+
+.contract-watchlist-item strong,
+.contract-watchlist-item span {
+  display: block;
+}
+
+.contract-watchlist-item strong {
+  color: #0f172a;
+}
+
+.contract-watchlist-item div span {
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.contract-watchlist-item > span {
+  color: #92400e;
+  font-weight: 800;
+}
+
+@media (max-width: 1180px) {
+  .contract-summary,
+  .contract-form {
+    grid-template-columns: 1fr;
+  }
+}

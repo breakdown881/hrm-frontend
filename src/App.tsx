@@ -6,10 +6,16 @@ import { Topbar } from './components/Topbar'
 import type { Module, ModuleId, UserRole } from './data/hrmData'
 import { canAccessModule, getVisibleModules, modules } from './data/hrmData'
 import { AccessDeniedPage } from './pages/AccessDeniedPage'
+import { AttendancePage } from './pages/AttendancePage'
+import { ContractPage } from './pages/ContractPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { EmployeesPage } from './pages/EmployeesPage'
+import { LeavePage } from './pages/LeavePage'
 import { ModuleWorkflowPage } from './pages/ModuleWorkflowPage'
+import { NotificationsPage } from './pages/NotificationsPage'
+import { OrganizationPage } from './pages/OrganizationPage'
 import { PayrollPage } from './pages/PayrollPage'
+import { SettingsPage } from './pages/SettingsPage'
 
 const moduleById = new Map<ModuleId, Module>(modules.map((module) => [module.id, module]))
 const moduleIds = new Set<ModuleId>(modules.map((module) => module.id))
@@ -78,16 +84,26 @@ function ModuleRoute({ currentRole }: { currentRole: UserRole }) {
       return <DashboardPage module={activeModule} />
     case 'employees':
       return <EmployeesPage />
+    case 'contracts':
+      return <ContractPage />
     case 'payroll':
       return <PayrollPage module={activeModule} />
     case 'organization':
+      return <OrganizationPage />
     case 'recruitment':
     case 'onboarding':
+      return <ModuleWorkflowPage module={activeModule} />
     case 'attendance':
+      return <AttendancePage />
     case 'leave':
+      return <LeavePage />
+    case 'notifications':
+      return <NotificationsPage />
     case 'performance':
     case 'reports':
+      return <ModuleWorkflowPage module={activeModule} />
     case 'settings':
+      return <SettingsPage />
     case 'audit':
       return <ModuleWorkflowPage module={activeModule} />
     default:
