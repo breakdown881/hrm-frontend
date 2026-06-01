@@ -8,9 +8,19 @@ type TopbarProps = {
   isSubmitting: boolean
   onCreateRequest: () => void
   onRoleChange: (role: UserRole) => void
+  onSignOut: () => void
+  sessionEmail: string | null
 }
 
-export function Topbar({ currentRole, feedback, isSubmitting, onCreateRequest, onRoleChange }: TopbarProps) {
+export function Topbar({
+  currentRole,
+  feedback,
+  isSubmitting,
+  onCreateRequest,
+  onRoleChange,
+  onSignOut,
+  sessionEmail,
+}: TopbarProps) {
   return (
     <>
       <header className="topbar">
@@ -35,6 +45,11 @@ export function Topbar({ currentRole, feedback, isSubmitting, onCreateRequest, o
           <button className="primary-button" disabled={isSubmitting} onClick={onCreateRequest} type="button">
             {isSubmitting ? 'Creating...' : '+ New request'}
           </button>
+          {sessionEmail && (
+            <button className="ghost-button" onClick={onSignOut} type="button">
+              Sign out
+            </button>
+          )}
         </div>
       </header>
 

@@ -20,6 +20,11 @@ type Holiday = {
   date: string
 }
 
+type WorkCalendar = {
+  hours: string
+  workdays: string
+}
+
 const initialLeaveTypes: LeaveType[] = [
   { id: 'LVT-001', name: 'Annual Leave', defaultDays: 12, paid: true },
   { id: 'LVT-002', name: 'Sick Leave', defaultDays: 6, paid: true },
@@ -32,16 +37,28 @@ const contractTypes: ContractType[] = [
   { id: 'CON-003', name: 'Indefinite Contract', duration: 'No end date' },
 ]
 
-const holidays: Holiday[] = [
+const initialHolidays: Holiday[] = [
   { id: 'HOL-001', name: 'Company Holiday', date: '2026-01-01' },
   { id: 'HOL-002', name: 'Founding Day', date: '2026-08-15' },
 ]
 
+const initialWorkCalendar: WorkCalendar = {
+  hours: '09:00 - 18:00',
+  workdays: 'Monday - Friday',
+}
+
 export function SettingsPage() {
   const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>(initialLeaveTypes)
+  const [holidayList, setHolidayList] = useState<Holiday[]>(initialHolidays)
+  const [workCalendar, setWorkCalendar] = useState<WorkCalendar>(initialWorkCalendar)
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isHolidayFormOpen, setIsHolidayFormOpen] = useState(false)
+  const [isCalendarFormOpen, setIsCalendarFormOpen] = useState(false)
   const [leaveTypeName, setLeaveTypeName] = useState('')
   const [defaultDays, setDefaultDays] = useState('')
+  const [holidayName, setHolidayName] = useState('')
+  const [holidayDate, setHolidayDate] = useState('')
+  const [calendarValues, setCalendarValues] = useState<WorkCalendar>(initialWorkCalendar)
   const [formError, setFormError] = useState('')
   const [feedback, setFeedback] = useState('')
 
@@ -69,6 +86,45 @@ export function SettingsPage() {
     setIsFormOpen(false)
   }
 
+  const handleSaveWorkCalendar = () => {
+    const trimmedWorkdays = calendarValues.workdays.trim()
+    const trimmedHours = calendarValues.hours.trim()
+
+    if (!trimmedWorkdays || !trimmedHours) {
+      setFormError('Workdays and standard working hours are required.')
+      return
+    }
+
+    setWorkCalendar({ hours: trimmedHours, workdays: trimmedWorkdays })
+    setCalendarValues({ hours: trimmedHours, workdays: trimmedWorkdays })
+    setFormError('')
+    setFeedback('Work calendar updated successfully')
+    setIsCalendarFormOpen(false)
+  }
+
+  const handleSaveHoliday = () => {
+    const trimmedName = holidayName.trim()
+    const trimmedDate = holidayDate.trim()
+
+    if (!trimmedName || !trimmedDate) {
+      setFormError('Holiday name and date are required.')
+      return
+    }
+
+    const newHoliday: Holiday = {
+      date: trimmedDate,
+      id: getNextHolidayId(holidayList),
+      name: trimmedName,
+    }
+
+    setHolidayList((currentHolidays) => [...currentHolidays, newHoliday])
+    setHolidayName('')
+    setHolidayDate('')
+    setFormError('')
+    setFeedback('Holiday created successfully')
+    setIsHolidayFormOpen(false)
+  }
+
   return (
     <>
       <section className="page-heading settings-heading">
@@ -90,7 +146,7 @@ export function SettingsPage() {
         </article>
         <article className="settings-stat-card">
           <span>Holidays</span>
-          <strong>{holidays.length}</strong>
+          <strong>{holidayList.length}</strong>
           <p>Working calendar entries</p>
         </article>
       </section>
@@ -184,11 +240,107 @@ export function SettingsPage() {
           <div className="card-header compact">
             <div>
               <p className="eyebrow">Calendar</p>
+              <h2>Working Calendar</h2>
+            </div>
+            <button
+              className="ghost-button"
+              onClick={() => {
+                setCalendarValues(workCalendar)
+                setIsCalendarFormOpen((isOpen) => !isOpen)
+                setFormError('')
+              }}
+              type="button"
+            >
+              {isCalendarFormOpen ? 'Close calendar form' : 'Configure work calendar'}
+            </button>
+          </div>
+
+          {isCalendarFormOpen && (
+            <div className="settings-form calendar-form" aria-label="Work calendar form">
+              <label>
+                <span>Workdays</span>
+                <input
+                  onChange={(event) => {
+                    setCalendarValues((currentValues) => ({ ...currentValues, workdays: event.target.value }))
+                    setFormError('')
+                  }}
+                  type="text"
+                  value={calendarValues.workdays}
+                />
+              </label>
+              <label>
+                <span>Standard working hours</span>
+                <input
+                  onChange={(event) => {
+                    setCalendarValues((currentValues) => ({ ...currentValues, hours: event.target.value }))
+                    setFormError('')
+                  }}
+                  type="text"
+                  value={calendarValues.hours}
+                />
+              </label>
+              {formError && <p className="form-error">{formError}</p>}
+              <button className="primary-button" onClick={handleSaveWorkCalendar} type="button">
+                Save work calendar
+              </button>
+            </div>
+          )}
+
+          <div className="master-data-list">
+            <article className="master-data-item">
+              <div>
+                <strong>{workCalendar.workdays}</strong>
+                <span>Configured workdays</span>
+              </div>
+              <span>{workCalendar.hours}</span>
+            </article>
+          </div>
+        </div>
+
+        <div className="card settings-card">
+          <div className="card-header compact">
+            <div>
+              <p className="eyebrow">Calendar</p>
               <h2>Holidays</h2>
             </div>
+            <button className="ghost-button" onClick={() => setIsHolidayFormOpen((isOpen) => !isOpen)} type="button">
+              {isHolidayFormOpen ? 'Close holiday form' : 'Add holiday'}
+            </button>
           </div>
+
+          {isHolidayFormOpen && (
+            <div className="settings-form holiday-form" aria-label="Add holiday form">
+              <label>
+                <span>Holiday name</span>
+                <input
+                  onChange={(event) => {
+                    setHolidayName(event.target.value)
+                    setFormError('')
+                  }}
+                  type="text"
+                  value={holidayName}
+                />
+              </label>
+              <label>
+                <span>Holiday date</span>
+                <input
+                  onChange={(event) => {
+                    setHolidayDate(event.target.value)
+                    setFormError('')
+                  }}
+                  type="date"
+                  value={holidayDate}
+                />
+              </label>
+              {formError && <p className="form-error">{formError}</p>}
+              <button className="primary-button" onClick={handleSaveHoliday} type="button">
+                Save holiday
+              </button>
+            </div>
+          )}
+
           <div className="master-data-list">
-            {holidays.map((holiday) => (
+            {holidayList.map((holiday) => (
               <article className="master-data-item" key={holiday.id}>
                 <div>
                   <strong>{holiday.name}</strong>
@@ -207,4 +359,9 @@ export function SettingsPage() {
 function getNextLeaveTypeId(leaveTypes: LeaveType[]) {
   const nextNumber = Math.max(...leaveTypes.map((leaveType) => Number(leaveType.id.replace('LVT-', '')))) + 1
   return `LVT-${String(nextNumber).padStart(3, '0')}`
+}
+
+function getNextHolidayId(holidays: Holiday[]) {
+  const nextNumber = Math.max(...holidays.map((holiday) => Number(holiday.id.replace('HOL-', '')))) + 1
+  return `HOL-${String(nextNumber).padStart(3, '0')}`
 }

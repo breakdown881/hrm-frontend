@@ -59,6 +59,80 @@
   font-size: 14px;
 }
 
+.employee-row-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.employee-detail-card {
+  align-self: start;
+}
+
+.detail-edit-form {
+  grid-template-columns: 1fr;
+  align-items: stretch;
+  margin-bottom: 0;
+}
+
+.employee-detail-sections {
+  display: grid;
+  gap: 18px;
+}
+
+.employee-detail-section {
+  display: grid;
+  gap: 12px;
+}
+
+.employee-detail-section h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 16px;
+}
+
+.employee-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.employee-avatar {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 14px;
+  color: #eff6ff;
+  font-weight: 900;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+}
+
+.employee-detail-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.employee-detail-list div {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 18px;
+  background: #f8fafc;
+}
+
+.employee-detail-list dt {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.employee-detail-list dd {
+  margin: 0;
+  color: #0f172a;
+  font-weight: 800;
+}
+
 @media (max-width: 1180px) {
   .employee-form {
     grid-template-columns: repeat(2, minmax(0, 1fr));

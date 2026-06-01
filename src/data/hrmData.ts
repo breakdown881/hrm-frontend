@@ -11,6 +11,7 @@ export type ModuleId =
   | 'attendance'
   | 'leave'
   | 'notifications'
+  | 'approvals'
   | 'performance'
   | 'payroll'
   | 'reports'
@@ -28,11 +29,19 @@ export type Module = {
 }
 
 export type Employee = {
+  address: string
   id: string
+  birthDate: string
+  email: string
+  emergencyContact: string
+  employeeType: string
+  gender: string
   name: string
+  phone: string
   role: string
   department: string
   manager: string
+  startDate: string
   status: 'Official' | 'Probation' | 'Offboarding'
   attendance: string
   leaveBalance: number
@@ -139,6 +148,15 @@ export const modules: Module[] = [
     priority: 'Must-have',
   },
   {
+    id: 'approvals',
+    label: 'Approvals',
+    icon: 'AP',
+    description: 'Central queue for leave, attendance adjustment and HR workflow approvals.',
+    progress: 60,
+    owner: 'Manager / HR',
+    priority: 'Must-have',
+  },
+  {
     id: 'performance',
     label: 'Performance',
     icon: 'PF',
@@ -187,41 +205,73 @@ export const modules: Module[] = [
 
 export const employees: Employee[] = [
   {
+    address: '12 Nguyen Hue, District 1, Ho Chi Minh City',
+    birthDate: '1990-04-12',
+    email: 'minh.anh@example.com',
+    emergencyContact: 'Tran Minh Quan - 0902000001',
+    employeeType: 'Full-time',
+    gender: 'Female',
     id: 'EMP-001',
     name: 'Nguyen Minh Anh',
+    phone: '0901000001',
     role: 'HR Manager',
     department: 'People Ops',
     manager: 'CEO',
+    startDate: '2022-03-15',
     status: 'Official',
     attendance: 'On time',
     leaveBalance: 10,
   },
   {
+    address: '88 Le Loi, District 3, Ho Chi Minh City',
+    birthDate: '1988-09-21',
+    email: 'quoc.huy@example.com',
+    emergencyContact: 'Nguyen Thu Linh - 0902000014',
+    employeeType: 'Full-time',
+    gender: 'Male',
     id: 'EMP-014',
     name: 'Tran Quoc Huy',
+    phone: '0901000014',
     role: 'Frontend Lead',
     department: 'Engineering',
     manager: 'CTO',
+    startDate: '2021-11-01',
     status: 'Official',
     attendance: 'Late 12m',
     leaveBalance: 7,
   },
   {
+    address: '45 Tran Hung Dao, District 5, Ho Chi Minh City',
+    birthDate: '1995-01-07',
+    email: 'thu.ha@example.com',
+    emergencyContact: 'Le Van Binh - 0902000027',
+    employeeType: 'Probation',
+    gender: 'Female',
     id: 'EMP-027',
     name: 'Le Thu Ha',
+    phone: '0901000027',
     role: 'Finance Executive',
     department: 'Finance',
     manager: 'CFO',
+    startDate: '2026-04-01',
     status: 'Probation',
     attendance: 'Remote',
     leaveBalance: 4,
   },
   {
+    address: '20 Phan Xich Long, Phu Nhuan, Ho Chi Minh City',
+    birthDate: '1987-12-03',
+    email: 'gia.bao@example.com',
+    emergencyContact: 'Pham Ngoc Mai - 0902000052',
+    employeeType: 'Full-time',
+    gender: 'Male',
     id: 'EMP-052',
     name: 'Pham Gia Bao',
+    phone: '0901000052',
     role: 'Sales Manager',
     department: 'Sales',
     manager: 'COO',
+    startDate: '2020-08-17',
     status: 'Official',
     attendance: 'On time',
     leaveBalance: 12,
@@ -258,6 +308,7 @@ export const moduleRequirements: Record<ModuleId, string[]> = {
   attendance: ['Check-in and check-out', 'Personal and company timesheets', 'Import and approve adjustments'],
   leave: ['Create leave requests', 'Manager and HR approval', 'Balance tracking and team calendar'],
   notifications: ['In-system notifications', 'Leave decision alerts', 'Onboarding and contract reminders'],
+  approvals: ['Pending request queue', 'Approve or reject with notes', 'Decision history'],
   performance: ['Performance review cycles', 'Self review and manager review', 'Score summary and review history'],
   payroll: ['Monthly payroll runs', 'Allowances, deductions and payslips', 'Locked cycles and payroll permissions'],
   reports: ['People, attendance and leave reports', 'Time and department filters', 'Excel and PDF exports'],
@@ -270,8 +321,8 @@ export const userRoles: UserRole[] = ['Admin', 'HR', 'Manager', 'Employee', 'Pay
 
 export const rolePermissions: Record<UserRole, ModuleId[]> = {
   Admin: modules.map((module) => module.id),
-  HR: ['dashboard', 'organization', 'employees', 'contracts', 'recruitment', 'onboarding', 'attendance', 'leave', 'notifications', 'performance', 'reports', 'settings'],
-  Manager: ['dashboard', 'employees', 'recruitment', 'onboarding', 'attendance', 'leave', 'notifications', 'performance', 'reports'],
+  HR: ['dashboard', 'organization', 'employees', 'contracts', 'recruitment', 'onboarding', 'attendance', 'leave', 'notifications', 'approvals', 'performance', 'reports', 'settings'],
+  Manager: ['dashboard', 'employees', 'recruitment', 'onboarding', 'attendance', 'leave', 'notifications', 'approvals', 'performance', 'reports'],
   Employee: ['dashboard', 'attendance', 'leave', 'notifications', 'performance'],
   'Payroll/Finance': ['dashboard', 'employees', 'attendance', 'leave', 'notifications', 'payroll', 'reports'],
 }
