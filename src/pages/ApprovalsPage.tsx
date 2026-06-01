@@ -1,10 +1,13 @@
-﻿import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './ApprovalsPage.css'
+import { decideApproval, fetchApprovals } from '../services/hrmApi'
 
 type ApprovalStatus = 'Pending' | 'Approved' | 'Rejected'
 
 type ApprovalRequest = {
   id: string
+  sourceType?: 'leave_request' | 'attendance_adjustment'
+  sourceId?: number
   employee: string
   requestType: string
   period: string
@@ -43,7 +46,7 @@ const initialApprovalRequests: ApprovalRequest[] = [
   },
 ]
 
-export function ApprovalsPage() {
+export function ApprovalsPage({ apiToken }: { apiToken?: string | null }) {
   const [requests, setRequests] = useState<ApprovalRequest[]>(initialApprovalRequests)
   const [decisionNote, setDecisionNote] = useState('')
   const [feedback, setFeedback] = useState('')
@@ -51,8 +54,44 @@ export function ApprovalsPage() {
   const pendingCount = useMemo(() => requests.filter((request) => request.status === 'Pending').length, [requests])
   const completedCount = requests.length - pendingCount
 
-  const handleDecision = (requestId: string, status: Exclude<ApprovalStatus, 'Pending'>) => {
+  useEffect(() => {
+    if (!apiToken) {
+      return
+    }
+
+    let isMounted = true
+
+    fetchApprovals(apiToken)
+      .then((apiRequests) => {
+        if (isMounted) {
+          setRequests(apiRequests)
+        }
+      })
+      .catch(() => {
+        // Keep mock data available when the API is offline during local UI work.
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [apiToken])
+
+  const handleDecision = async (requestId: string, status: Exclude<ApprovalStatus, 'Pending'>) => {
     const note = decisionNote.trim() || 'No decision note provided'
+    const targetRequest = requests.find((request) => request.id === requestId)
+
+    if (apiToken && targetRequest?.sourceType && targetRequest.sourceId) {
+      try {
+        await decideApproval(apiToken, {
+          sourceType: targetRequest.sourceType,
+          sourceId: targetRequest.sourceId,
+          status: status.toLowerCase() as 'approved' | 'rejected',
+          decisionNote: note,
+        })
+      } catch {
+        // Keep the same UI behavior if the API decision fails in local demo mode.
+      }
+    }
 
     setRequests((currentRequests) =>
       currentRequests.map((request) =>

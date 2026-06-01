@@ -1,10 +1,12 @@
-﻿import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './NotificationsPage.css'
+import { fetchNotifications, markNotificationAsRead } from '../services/hrmApi'
 
 type NotificationStatus = 'Unread' | 'Read'
 type NotificationTone = 'warning' | 'info' | 'success'
 
 type HrmNotification = {
+  backendId?: number
   id: string
   title: string
   message: string
@@ -40,7 +42,7 @@ const initialNotifications: HrmNotification[] = [
   },
 ]
 
-export function NotificationsPage() {
+export function NotificationsPage({ apiToken }: { apiToken?: string | null }) {
   const [notifications, setNotifications] = useState<HrmNotification[]>(initialNotifications)
   const [feedback, setFeedback] = useState('')
 
@@ -49,10 +51,43 @@ export function NotificationsPage() {
     [notifications],
   )
 
-  const markAsRead = (notificationId: string) => {
+  useEffect(() => {
+    if (!apiToken) {
+      return
+    }
+
+    let isMounted = true
+
+    fetchNotifications(apiToken)
+      .then((apiNotifications) => {
+        if (isMounted) {
+          setNotifications(apiNotifications)
+        }
+      })
+      .catch(() => {
+        // Keep mock data available when the API is offline during local UI work.
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [apiToken])
+
+  const markAsRead = async (notificationId: string) => {
+    const targetNotification = notifications.find((notification) => notification.id === notificationId)
+    let updatedNotification: HrmNotification | null = null
+
+    if (apiToken && targetNotification?.backendId) {
+      try {
+        updatedNotification = await markNotificationAsRead(apiToken, targetNotification.backendId)
+      } catch {
+        updatedNotification = null
+      }
+    }
+
     setNotifications((currentNotifications) =>
       currentNotifications.map((notification) =>
-        notification.id === notificationId ? { ...notification, status: 'Read' } : notification,
+        notification.id === notificationId ? updatedNotification ?? { ...notification, status: 'Read' } : notification,
       ),
     )
     setFeedback('Notification marked as read')

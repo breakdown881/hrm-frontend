@@ -1,12 +1,16 @@
-﻿import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './ContractPage.css'
-import { employees } from '../data/hrmData'
+import { employees as mockEmployees } from '../data/hrmData'
+import type { Employee } from '../data/hrmData'
+import { createContract, fetchContracts, fetchEmployees } from '../services/hrmApi'
 
 type ContractStatus = 'Active' | 'Expiring soon' | 'Expired'
 
 type ContractRecord = {
+  backendId?: number
   id: string
   employee: string
+  employeeBackendId?: number
   type: string
   startDate: string
   endDate: string
@@ -43,10 +47,11 @@ const initialContracts: ContractRecord[] = [
   },
 ]
 
-export function ContractPage() {
+export function ContractPage({ apiToken }: { apiToken?: string | null }) {
   const [contracts, setContracts] = useState<ContractRecord[]>(initialContracts)
+  const [employeeOptions, setEmployeeOptions] = useState<Employee[]>(mockEmployees)
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [employeeName, setEmployeeName] = useState(employees[0].name)
+  const [employeeName, setEmployeeName] = useState(mockEmployees[0].name)
   const [contractType, setContractType] = useState(contractTypes[0])
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -60,7 +65,31 @@ export function ContractPage() {
     [contracts],
   )
 
-  const handleSaveContract = () => {
+  useEffect(() => {
+    if (!apiToken) {
+      return
+    }
+
+    let isMounted = true
+
+    Promise.all([fetchContracts(apiToken), fetchEmployees(apiToken)])
+      .then(([apiContracts, apiEmployees]) => {
+        if (isMounted) {
+          setContracts(apiContracts)
+          setEmployeeOptions(apiEmployees)
+          setEmployeeName(apiEmployees[0]?.name ?? mockEmployees[0].name)
+        }
+      })
+      .catch(() => {
+        // Keep mock data available when the API is offline during local UI work.
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [apiToken])
+
+  const handleSaveContract = async () => {
     const trimmedStartDate = startDate.trim()
     const trimmedEndDate = endDate.trim()
 
@@ -69,13 +98,29 @@ export function ContractPage() {
       return
     }
 
-    const nextContract: ContractRecord = {
+    const localContract: ContractRecord = {
       id: getNextContractId(contracts),
       employee: employeeName,
       type: contractType,
       startDate: trimmedStartDate,
       endDate: trimmedEndDate,
       status,
+    }
+    const selectedEmployee = employeeOptions.find((employee) => employee.name === employeeName)
+    let nextContract = localContract
+
+    if (apiToken && selectedEmployee?.backendId) {
+      try {
+        nextContract = await createContract(apiToken, {
+          employeeId: selectedEmployee.backendId,
+          contractType,
+          startDate: trimmedStartDate,
+          endDate: trimmedEndDate,
+          status,
+        })
+      } catch {
+        nextContract = localContract
+      }
     }
 
     setContracts((currentContracts) => [...currentContracts, nextContract])
@@ -136,7 +181,7 @@ export function ContractPage() {
               <label>
                 <span>Employee</span>
                 <select onChange={(event) => setEmployeeName(event.target.value)} value={employeeName}>
-                  {employees.map((employee) => (
+                  {employeeOptions.map((employee) => (
                     <option key={employee.id} value={employee.name}>
                       {employee.name}
                     </option>

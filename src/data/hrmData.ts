@@ -30,6 +30,7 @@ export type Module = {
 
 export type Employee = {
   address: string
+  backendId?: number
   id: string
   birthDate: string
   email: string

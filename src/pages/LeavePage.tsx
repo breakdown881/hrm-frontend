@@ -1,12 +1,16 @@
-﻿import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './LeavePage.css'
-import { employees } from '../data/hrmData'
+import { employees as mockEmployees } from '../data/hrmData'
+import type { Employee } from '../data/hrmData'
+import { createLeaveRequest, decideApproval, fetchEmployees, fetchLeaveRequests } from '../services/hrmApi'
 
 type LeaveStatus = 'Pending' | 'Approved' | 'Rejected'
 
 type LeaveRequest = {
+  backendId?: number
   id: string
   employee: string
+  employeeBackendId?: number
   type: string
   dateRange: string
   days: number
@@ -46,10 +50,11 @@ const initialLeaveRequests: LeaveRequest[] = [
   },
 ]
 
-export function LeavePage() {
+export function LeavePage({ apiToken }: { apiToken?: string | null }) {
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(initialLeaveRequests)
+  const [employeeOptions, setEmployeeOptions] = useState<Employee[]>(mockEmployees)
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [employeeName, setEmployeeName] = useState(employees[0].name)
+  const [employeeName, setEmployeeName] = useState(mockEmployees[0].name)
   const [leaveType, setLeaveType] = useState(leaveTypes[0])
   const [dateRange, setDateRange] = useState('')
   const [days, setDays] = useState('')
@@ -65,7 +70,31 @@ export function LeavePage() {
     [leaveRequests],
   )
 
-  const handleSubmitRequest = () => {
+  useEffect(() => {
+    if (!apiToken) {
+      return
+    }
+
+    let isMounted = true
+
+    Promise.all([fetchLeaveRequests(apiToken), fetchEmployees(apiToken)])
+      .then(([apiLeaveRequests, apiEmployees]) => {
+        if (isMounted) {
+          setLeaveRequests(apiLeaveRequests)
+          setEmployeeOptions(apiEmployees)
+          setEmployeeName(apiEmployees[0]?.name ?? mockEmployees[0].name)
+        }
+      })
+      .catch(() => {
+        // Keep mock data available when the API is offline during local UI work.
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [apiToken])
+
+  const handleSubmitRequest = async () => {
     const trimmedDateRange = dateRange.trim()
     const parsedDays = Number(days)
 
@@ -74,7 +103,7 @@ export function LeavePage() {
       return
     }
 
-    const nextRequest: LeaveRequest = {
+    const localRequest: LeaveRequest = {
       id: getNextLeaveRequestId(leaveRequests),
       employee: employeeName,
       type: leaveType,
@@ -82,6 +111,22 @@ export function LeavePage() {
       days: parsedDays,
       status: 'Pending',
       note: 'Submitted by employee',
+    }
+    const selectedEmployee = employeeOptions.find((employee) => employee.name === employeeName)
+    let nextRequest = localRequest
+
+    if (apiToken && selectedEmployee?.backendId) {
+      try {
+        nextRequest = await createLeaveRequest(apiToken, {
+          employeeId: selectedEmployee.backendId,
+          leaveType,
+          dateRange: trimmedDateRange,
+          days: parsedDays,
+          reason: 'Submitted by employee',
+        })
+      } catch {
+        nextRequest = localRequest
+      }
     }
 
     setLeaveRequests((currentRequests) => [...currentRequests, nextRequest])
@@ -92,11 +137,33 @@ export function LeavePage() {
     setIsFormOpen(false)
   }
 
-  const handleDecision = (requestId: string, status: Exclude<LeaveStatus, 'Pending'>) => {
+  const handleDecision = async (requestId: string, status: Exclude<LeaveStatus, 'Pending'>) => {
+    const targetRequest = leaveRequests.find((request) => request.id === requestId)
+    const decisionNote = `${status} by Admin`
+
+    if (apiToken && targetRequest?.backendId) {
+      try {
+        const decidedRequest = await decideApproval(apiToken, {
+          sourceType: 'leave_request',
+          sourceId: targetRequest.backendId,
+          status: status.toLowerCase() as 'approved' | 'rejected',
+          decisionNote,
+        })
+
+        if ('dateRange' in decidedRequest) {
+          setLeaveRequests((currentRequests) =>
+            currentRequests.map((request) => (request.id === requestId ? decidedRequest : request)),
+          )
+          setFeedback(`Leave request ${status.toLowerCase()} successfully`)
+          return
+        }
+      } catch {
+        // Fall through to local update for offline demo mode.
+      }
+    }
+
     setLeaveRequests((currentRequests) =>
-      currentRequests.map((request) =>
-        request.id === requestId ? { ...request, status, note: `${status} by Admin` } : request,
-      ),
+      currentRequests.map((request) => (request.id === requestId ? { ...request, status, note: decisionNote } : request)),
     )
     setFeedback(`Leave request ${status.toLowerCase()} successfully`)
   }
@@ -150,7 +217,7 @@ export function LeavePage() {
               <label>
                 <span>Employee</span>
                 <select onChange={(event) => setEmployeeName(event.target.value)} value={employeeName}>
-                  {employees.map((employee) => (
+                  {employeeOptions.map((employee) => (
                     <option key={employee.id} value={employee.name}>
                       {employee.name}
                     </option>
@@ -261,7 +328,7 @@ export function LeavePage() {
             </div>
           </div>
           <div className="leave-balance-list">
-            {employees.map((employee) => (
+            {employeeOptions.map((employee) => (
               <article className="leave-balance-item" key={employee.id}>
                 <div>
                   <strong>{employee.name}</strong>

@@ -22,6 +22,7 @@ import { PerformancePage } from './pages/PerformancePage'
 import { RecruitmentPage } from './pages/RecruitmentPage'
 import { ReportsPage } from './pages/ReportsPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { signIn } from './services/hrmApi'
 
 const moduleById = new Map<ModuleId, Module>(modules.map((module) => [module.id, module]))
 const moduleIds = new Set<ModuleId>(modules.map((module) => module.id))
@@ -29,6 +30,7 @@ const moduleIds = new Set<ModuleId>(modules.map((module) => module.id))
 type UserSession = {
   email: string
   role: UserRole
+  token?: string
 }
 
 function App() {
@@ -57,11 +59,20 @@ function AppLayout() {
     }, 650)
   }
 
-  const handleSignIn = (email: string, role: UserRole) => {
+  const handleSignIn = async (email: string, password: string, role: UserRole) => {
     setSession({ email, role })
     setCurrentRole(role)
     setFeedback(`Signed in as ${email}`)
     navigate('/dashboard')
+
+    try {
+      const apiSession = await signIn(email, password)
+      setSession({ email: apiSession.user.email, role: apiSession.user.role, token: apiSession.token })
+      setCurrentRole(apiSession.user.role)
+      setFeedback(`Signed in as ${apiSession.user.email}`)
+    } catch {
+      // Keep the local demo session when the backend is unavailable.
+    }
   }
 
   const handleSignOut = () => {
@@ -91,7 +102,10 @@ function AppLayout() {
         <Routes>
           <Route element={<Navigate replace to="/dashboard" />} path="/" />
           <Route element={<AuthPage onChangePassword={handleChangePassword} onSignIn={handleSignIn} />} path="/login" />
-          <Route element={<ModuleRoute currentRole={currentRole} isAuthenticated={Boolean(session)} />} path="/:moduleId" />
+          <Route
+            element={<ModuleRoute apiToken={session?.token ?? null} currentRole={currentRole} isAuthenticated={Boolean(session)} />}
+            path="/:moduleId"
+          />
           <Route element={<Navigate replace to="/dashboard" />} path="*" />
         </Routes>
       </main>
@@ -99,7 +113,15 @@ function AppLayout() {
   )
 }
 
-function ModuleRoute({ currentRole, isAuthenticated }: { currentRole: UserRole; isAuthenticated: boolean }) {
+function ModuleRoute({
+  apiToken,
+  currentRole,
+  isAuthenticated,
+}: {
+  apiToken: string | null
+  currentRole: UserRole
+  isAuthenticated: boolean
+}) {
   const { moduleId } = useParams<{ moduleId: string }>()
 
   if (!isAuthenticated) {
@@ -120,25 +142,25 @@ function ModuleRoute({ currentRole, isAuthenticated }: { currentRole: UserRole; 
     case 'dashboard':
       return <DashboardPage module={activeModule} />
     case 'employees':
-      return <EmployeesPage />
+      return <EmployeesPage apiToken={apiToken} />
     case 'contracts':
-      return <ContractPage />
+      return <ContractPage apiToken={apiToken} />
     case 'payroll':
       return <PayrollPage module={activeModule} />
     case 'organization':
       return <OrganizationPage />
     case 'recruitment':
-      return <RecruitmentPage />
+      return <RecruitmentPage apiToken={apiToken} />
     case 'onboarding':
-      return <OnboardingPage />
+      return <OnboardingPage apiToken={apiToken} />
     case 'attendance':
-      return <AttendancePage />
+      return <AttendancePage apiToken={apiToken} />
     case 'leave':
-      return <LeavePage />
+      return <LeavePage apiToken={apiToken} />
     case 'notifications':
-      return <NotificationsPage />
+      return <NotificationsPage apiToken={apiToken} />
     case 'approvals':
-      return <ApprovalsPage />
+      return <ApprovalsPage apiToken={apiToken} />
     case 'performance':
       return <PerformancePage />
     case 'reports':

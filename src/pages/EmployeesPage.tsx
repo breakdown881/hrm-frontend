@@ -1,9 +1,10 @@
 import './EmployeesPage.css'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { EmptyState } from '../components/EmptyState'
 import { StatusBadge } from '../components/StatusBadge'
 import type { Employee } from '../data/hrmData'
 import { employees } from '../data/hrmData'
+import { fetchEmployees } from '../services/hrmApi'
 
 type EmployeeFormState = {
   department: string
@@ -35,7 +36,7 @@ const emptyForm: EmployeeFormState = {
   role: '',
 }
 
-export function EmployeesPage() {
+export function EmployeesPage({ apiToken }: { apiToken?: string | null }) {
   const [employeeList, setEmployeeList] = useState<Employee[]>(employees)
   const [employeeSearch, setEmployeeSearch] = useState('')
   const [departmentFilter, setDepartmentFilter] = useState(allDepartmentOption)
@@ -68,6 +69,28 @@ export function EmployeesPage() {
     })
   }, [departmentFilter, employeeList, employeeSearch, statusFilter])
   const selectedEmployee = employeeList.find((employee) => employee.id === selectedEmployeeId) ?? null
+
+  useEffect(() => {
+    if (!apiToken) {
+      return
+    }
+
+    let isMounted = true
+
+    fetchEmployees(apiToken)
+      .then((apiEmployees) => {
+        if (isMounted) {
+          setEmployeeList(apiEmployees)
+        }
+      })
+      .catch(() => {
+        // Keep mock data available when the API is offline during local UI work.
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [apiToken])
 
   const resetFilters = () => {
     setEmployeeSearch('')

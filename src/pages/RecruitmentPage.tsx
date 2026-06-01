@@ -1,34 +1,23 @@
-﻿import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './RecruitmentPage.css'
+import {
+  createCandidate,
+  createJobOpening,
+  convertCandidateToEmployee,
+  fetchCandidates,
+  fetchJobOpenings,
+} from '../services/hrmApi'
+import type {
+  CandidateStatus,
+  FrontendCandidate,
+  FrontendConvertedEmployee,
+  FrontendJobOpening,
+  OpeningStatus,
+} from '../services/hrmApi'
 
-type OpeningStatus = 'Draft' | 'Active' | 'Closed'
-type CandidateStatus = 'Applied' | 'Screening' | 'Interview' | 'Offer' | 'Hired' | 'Rejected'
-
-type JobOpening = {
-  id: string
-  title: string
-  department: string
-  status: OpeningStatus
-}
-
-type Candidate = {
-  id: string
-  name: string
-  email: string
-  phone: string
-  position: string
-  source: string
-  status: CandidateStatus
-}
-
-type ConvertedEmployee = {
-  id: string
-  candidateId: string
-  name: string
-  email: string
-  role: string
-  department: string
-}
+type JobOpening = FrontendJobOpening
+type Candidate = FrontendCandidate
+type ConvertedEmployee = FrontendConvertedEmployee
 
 const departments = ['People Ops', 'Engineering', 'Finance', 'Sales']
 const openingStatuses: OpeningStatus[] = ['Draft', 'Active', 'Closed']
@@ -62,7 +51,7 @@ const initialCandidates: Candidate[] = [
   },
 ]
 
-export function RecruitmentPage() {
+export function RecruitmentPage({ apiToken }: { apiToken?: string | null }) {
   const [openings, setOpenings] = useState<JobOpening[]>(initialOpenings)
   const [candidates, setCandidates] = useState<Candidate[]>(initialCandidates)
   const [convertedEmployees, setConvertedEmployees] = useState<ConvertedEmployee[]>([])
@@ -86,7 +75,31 @@ export function RecruitmentPage() {
     [candidates],
   )
 
-  const handleSaveOpening = () => {
+  useEffect(() => {
+    if (!apiToken) {
+      return
+    }
+
+    let isMounted = true
+
+    Promise.all([fetchJobOpenings(apiToken), fetchCandidates(apiToken)])
+      .then(([apiOpenings, apiCandidates]) => {
+        if (isMounted) {
+          setOpenings(apiOpenings)
+          setCandidates(apiCandidates)
+          setPositionApplied(apiOpenings[0]?.title ?? initialOpenings[0].title)
+        }
+      })
+      .catch(() => {
+        // Keep mock data available when the API is offline during local UI work.
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [apiToken])
+
+  const handleSaveOpening = async () => {
     const trimmedTitle = jobTitle.trim()
 
     if (!trimmedTitle) {
@@ -94,15 +107,29 @@ export function RecruitmentPage() {
       return
     }
 
-    const nextOpening: JobOpening = {
+    const localOpening: JobOpening = {
       id: getNextOpeningId(openings),
       title: trimmedTitle,
       department,
       status: openingStatus,
     }
+    const matchingDepartment = openings.find((opening) => opening.department === department && opening.departmentBackendId)
+    let nextOpening = localOpening
+
+    if (apiToken) {
+      try {
+        nextOpening = await createJobOpening(apiToken, {
+          title: trimmedTitle,
+          departmentId: matchingDepartment?.departmentBackendId,
+          status: openingStatus,
+        })
+      } catch {
+        nextOpening = localOpening
+      }
+    }
 
     setOpenings((currentOpenings) => [...currentOpenings, nextOpening])
-    setPositionApplied(trimmedTitle)
+    setPositionApplied(nextOpening.title)
     setJobTitle('')
     setDepartment(departments[0])
     setOpeningStatus('Draft')
@@ -111,7 +138,7 @@ export function RecruitmentPage() {
     setIsOpeningFormOpen(false)
   }
 
-  const handleSaveCandidate = () => {
+  const handleSaveCandidate = async () => {
     const trimmedName = candidateName.trim()
     const trimmedEmail = candidateEmail.trim()
     const trimmedPhone = candidatePhone.trim()
@@ -121,7 +148,7 @@ export function RecruitmentPage() {
       return
     }
 
-    const nextCandidate: Candidate = {
+    const localCandidate: Candidate = {
       id: getNextCandidateId(candidates),
       name: trimmedName,
       email: trimmedEmail,
@@ -129,6 +156,23 @@ export function RecruitmentPage() {
       position: positionApplied,
       source: candidateSource,
       status: applicationStatus,
+    }
+    const selectedOpening = openings.find((opening) => opening.title === positionApplied)
+    let nextCandidate = localCandidate
+
+    if (apiToken && selectedOpening?.backendId) {
+      try {
+        nextCandidate = await createCandidate(apiToken, {
+          jobOpeningId: selectedOpening.backendId,
+          name: trimmedName,
+          email: trimmedEmail,
+          phone: trimmedPhone,
+          source: candidateSource,
+          status: applicationStatus,
+        })
+      } catch {
+        nextCandidate = localCandidate
+      }
     }
 
     setCandidates((currentCandidates) => [...currentCandidates, nextCandidate])
@@ -142,14 +186,23 @@ export function RecruitmentPage() {
     setIsCandidateFormOpen(false)
   }
 
-  const handleConvertCandidate = (candidate: Candidate) => {
-    const nextEmployee: ConvertedEmployee = {
+  const handleConvertCandidate = async (candidate: Candidate) => {
+    const localEmployee: ConvertedEmployee = {
       id: `EMP-${candidate.id}`,
       candidateId: candidate.id,
       name: candidate.name,
       email: candidate.email,
       role: candidate.position,
       department: getDepartmentForPosition(candidate.position, openings),
+    }
+    let nextEmployee = localEmployee
+
+    if (apiToken && candidate.backendId) {
+      try {
+        nextEmployee = await convertCandidateToEmployee(apiToken, candidate)
+      } catch {
+        nextEmployee = localEmployee
+      }
     }
 
     setConvertedEmployees((currentEmployees) => [...currentEmployees, nextEmployee])

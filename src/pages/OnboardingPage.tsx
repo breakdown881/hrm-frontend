@@ -1,16 +1,16 @@
-import { useMemo, useState } from 'react'
-import { employees } from '../data/hrmData'
+import { useEffect, useMemo, useState } from 'react'
+import { employees as mockEmployees } from '../data/hrmData'
+import type { Employee } from '../data/hrmData'
+import {
+  completeOnboardingTask,
+  createOnboardingTask,
+  fetchEmployees,
+  fetchOnboardingTasks,
+} from '../services/hrmApi'
+import type { FrontendOnboardingTask } from '../services/hrmApi'
 import './OnboardingPage.css'
 
-type OnboardingStatus = 'Pending' | 'Completed'
-
-type OnboardingTask = {
-  id: string
-  name: string
-  newHire: string
-  owner: string
-  status: OnboardingStatus
-}
+type OnboardingTask = FrontendOnboardingTask
 
 const initialTasks: OnboardingTask[] = [
   {
@@ -38,12 +38,13 @@ const initialTasks: OnboardingTask[] = [
 
 const checklistTemplates = ['Profile verification', 'Contract signing', 'System account setup', 'Equipment handover']
 
-export function OnboardingPage() {
+export function OnboardingPage({ apiToken }: { apiToken?: string | null }) {
   const [tasks, setTasks] = useState<OnboardingTask[]>(initialTasks)
+  const [employeeOptions, setEmployeeOptions] = useState<Employee[]>(mockEmployees)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [taskName, setTaskName] = useState('')
-  const [newHire, setNewHire] = useState(employees[2].name)
-  const [taskOwner, setTaskOwner] = useState(employees[0].name)
+  const [newHire, setNewHire] = useState(mockEmployees[2].name)
+  const [taskOwner, setTaskOwner] = useState(mockEmployees[0].name)
   const [formError, setFormError] = useState('')
   const [feedback, setFeedback] = useState('')
 
@@ -51,7 +52,32 @@ export function OnboardingPage() {
   const pendingCount = tasks.length - completedCount
   const completionRate = tasks.length === 0 ? 0 : Math.round((completedCount / tasks.length) * 100)
 
-  const handleSaveTask = () => {
+  useEffect(() => {
+    if (!apiToken) {
+      return
+    }
+
+    let isMounted = true
+
+    Promise.all([fetchOnboardingTasks(apiToken), fetchEmployees(apiToken)])
+      .then(([apiTasks, apiEmployees]) => {
+        if (isMounted) {
+          setTasks(apiTasks)
+          setEmployeeOptions(apiEmployees)
+          setNewHire(apiEmployees[2]?.name ?? apiEmployees[0]?.name ?? mockEmployees[2].name)
+          setTaskOwner(apiEmployees[0]?.name ?? mockEmployees[0].name)
+        }
+      })
+      .catch(() => {
+        // Keep mock data available when the API is offline during local UI work.
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [apiToken])
+
+  const handleSaveTask = async () => {
     const trimmedName = taskName.trim()
 
     if (!trimmedName) {
@@ -59,26 +85,54 @@ export function OnboardingPage() {
       return
     }
 
-    const nextTask: OnboardingTask = {
+    const localTask: OnboardingTask = {
       id: getNextTaskId(tasks),
       name: trimmedName,
       newHire,
       owner: taskOwner,
       status: 'Pending',
     }
+    const selectedNewHire = employeeOptions.find((employee) => employee.name === newHire)
+    const selectedOwner = employeeOptions.find((employee) => employee.name === taskOwner)
+    let nextTask = localTask
+
+    if (apiToken && selectedNewHire?.backendId) {
+      try {
+        nextTask = await createOnboardingTask(apiToken, {
+          name: trimmedName,
+          newHireId: selectedNewHire.backendId,
+          ownerId: selectedOwner?.backendId,
+        })
+      } catch {
+        nextTask = localTask
+      }
+    }
 
     setTasks((currentTasks) => [...currentTasks, nextTask])
     setTaskName('')
-    setNewHire(employees[2].name)
-    setTaskOwner(employees[0].name)
+    setNewHire(employeeOptions[2]?.name ?? employeeOptions[0]?.name ?? mockEmployees[2].name)
+    setTaskOwner(employeeOptions[0]?.name ?? mockEmployees[0].name)
     setFormError('')
     setFeedback('Onboarding task created successfully')
     setIsFormOpen(false)
   }
 
-  const handleCompleteTask = (taskId: string) => {
+  const handleCompleteTask = async (taskId: string) => {
+    const targetTask = tasks.find((task) => task.id === taskId)
+    let completedTask: OnboardingTask | null = null
+
+    if (apiToken && targetTask?.backendId) {
+      try {
+        completedTask = await completeOnboardingTask(apiToken, targetTask.backendId)
+      } catch {
+        completedTask = null
+      }
+    }
+
     setTasks((currentTasks) =>
-      currentTasks.map((task) => (task.id === taskId ? { ...task, status: 'Completed' } : task)),
+      currentTasks.map((task) =>
+        task.id === taskId ? completedTask ?? { ...task, status: 'Completed' } : task,
+      ),
     )
     setFeedback('Onboarding task completed successfully')
   }
@@ -144,7 +198,7 @@ export function OnboardingPage() {
               <label>
                 <span>New hire</span>
                 <select onChange={(event) => setNewHire(event.target.value)} value={newHire}>
-                  {employees.map((employee) => (
+                  {employeeOptions.map((employee) => (
                     <option key={employee.id} value={employee.name}>
                       {employee.name}
                     </option>
@@ -154,7 +208,7 @@ export function OnboardingPage() {
               <label>
                 <span>Task owner</span>
                 <select onChange={(event) => setTaskOwner(event.target.value)} value={taskOwner}>
-                  {employees.map((employee) => (
+                  {employeeOptions.map((employee) => (
                     <option key={employee.id} value={employee.name}>
                       {employee.name}
                     </option>

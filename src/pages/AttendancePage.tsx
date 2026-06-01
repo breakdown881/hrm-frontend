@@ -1,12 +1,16 @@
-﻿import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './AttendancePage.css'
-import { employees } from '../data/hrmData'
+import { employees as mockEmployees } from '../data/hrmData'
+import type { Employee } from '../data/hrmData'
+import { createAttendanceRecord, fetchAttendanceRecords, fetchEmployees } from '../services/hrmApi'
 
 type AttendanceStatus = 'On time' | 'Late' | 'Remote' | 'Missing checkout'
 
 type AttendanceRecord = {
+  backendId?: number
   id: string
   employee: string
+  employeeBackendId?: number
   date: string
   checkIn: string
   checkOut: string
@@ -21,10 +25,11 @@ const initialAttendanceRecords: AttendanceRecord[] = [
   { id: 'ATT-003', employee: 'Pham Gia Bao', date: '2026-06-01', checkIn: '08:45', checkOut: '17:30', status: 'On time' },
 ]
 
-export function AttendancePage() {
+export function AttendancePage({ apiToken }: { apiToken?: string | null }) {
   const [records, setRecords] = useState<AttendanceRecord[]>(initialAttendanceRecords)
+  const [employeeOptions, setEmployeeOptions] = useState<Employee[]>(mockEmployees)
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [employeeName, setEmployeeName] = useState(employees[0].name)
+  const [employeeName, setEmployeeName] = useState(mockEmployees[0].name)
   const [workDate, setWorkDate] = useState('')
   const [checkIn, setCheckIn] = useState('')
   const [checkOut, setCheckOut] = useState('')
@@ -35,7 +40,31 @@ export function AttendancePage() {
   const onTimeCount = useMemo(() => records.filter((record) => record.status === 'On time').length, [records])
   const exceptionCount = records.length - onTimeCount
 
-  const handleSaveRecord = () => {
+  useEffect(() => {
+    if (!apiToken) {
+      return
+    }
+
+    let isMounted = true
+
+    Promise.all([fetchAttendanceRecords(apiToken), fetchEmployees(apiToken)])
+      .then(([apiRecords, apiEmployees]) => {
+        if (isMounted) {
+          setRecords(apiRecords)
+          setEmployeeOptions(apiEmployees)
+          setEmployeeName(apiEmployees[0]?.name ?? mockEmployees[0].name)
+        }
+      })
+      .catch(() => {
+        // Keep mock data available when the API is offline during local UI work.
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [apiToken])
+
+  const handleSaveRecord = async () => {
     const trimmedWorkDate = workDate.trim()
     const trimmedCheckIn = checkIn.trim()
     const trimmedCheckOut = checkOut.trim()
@@ -45,13 +74,29 @@ export function AttendancePage() {
       return
     }
 
-    const nextRecord: AttendanceRecord = {
+    const localRecord: AttendanceRecord = {
       id: getNextAttendanceId(records),
       employee: employeeName,
       date: trimmedWorkDate,
       checkIn: trimmedCheckIn,
       checkOut: trimmedCheckOut,
       status,
+    }
+    const selectedEmployee = employeeOptions.find((employee) => employee.name === employeeName)
+    let nextRecord = localRecord
+
+    if (apiToken && selectedEmployee?.backendId) {
+      try {
+        nextRecord = await createAttendanceRecord(apiToken, {
+          employeeId: selectedEmployee.backendId,
+          workDate: trimmedWorkDate,
+          checkIn: trimmedCheckIn,
+          checkOut: trimmedCheckOut,
+          status,
+        })
+      } catch {
+        nextRecord = localRecord
+      }
     }
 
     setRecords((currentRecords) => [...currentRecords, nextRecord])
@@ -113,7 +158,7 @@ export function AttendancePage() {
               <label>
                 <span>Employee</span>
                 <select onChange={(event) => setEmployeeName(event.target.value)} value={employeeName}>
-                  {employees.map((employee) => (
+                  {employeeOptions.map((employee) => (
                     <option key={employee.id} value={employee.name}>
                       {employee.name}
                     </option>

@@ -5,7 +5,7 @@ import './AuthPage.css'
 
 type AuthPageProps = {
   onChangePassword: () => void
-  onSignIn: (email: string, role: UserRole) => void
+  onSignIn: (email: string, password: string, role: UserRole) => void | Promise<void>
 }
 
 export function AuthPage({ onChangePassword, onSignIn }: AuthPageProps) {
@@ -18,7 +18,7 @@ export function AuthPage({ onChangePassword, onSignIn }: AuthPageProps) {
   const [formError, setFormError] = useState('')
   const [passwordFeedback, setPasswordFeedback] = useState('')
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     const trimmedEmail = email.trim()
 
     if (!trimmedEmail || !password) {
@@ -27,7 +27,7 @@ export function AuthPage({ onChangePassword, onSignIn }: AuthPageProps) {
     }
 
     setFormError('')
-    onSignIn(trimmedEmail, role)
+    await onSignIn(trimmedEmail, password, role)
   }
 
   const handleChangePassword = () => {
