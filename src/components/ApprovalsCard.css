@@ -1,0 +1,63 @@
+.approval-list {
+  display: grid;
+  gap: 12px;
+}
+
+.approval-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 18px;
+  background: rgba(248, 250, 252, 0.78);
+}
+
+.approval-item strong,
+.approval-item span {
+  display: block;
+}
+
+.approval-item strong {
+  color: #0f172a;
+}
+
+.approval-item div span {
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.approval-status {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.approval-status.pending {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.approval-status.approved {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.approval-status.rejected {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+@media (max-width: 760px) {
+  .approval-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

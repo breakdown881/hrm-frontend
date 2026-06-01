@@ -1,3 +1,4 @@
+import './Topbar.css'
 import type { UserRole } from '../data/hrmData'
 import { userRoles } from '../data/hrmData'
 

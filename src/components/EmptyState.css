@@ -1,0 +1,26 @@
+.empty-state {
+  display: grid;
+  justify-items: center;
+  padding: 34px 18px;
+  border: 1px dashed rgba(148, 163, 184, 0.7);
+  border-radius: 22px;
+  text-align: center;
+  background: rgba(248, 250, 252, 0.72);
+}
+
+.empty-state p {
+  max-width: 520px;
+  margin-bottom: 18px;
+  color: #64748b;
+}
+
+.empty-icon {
+  display: grid;
+  width: 50px;
+  height: 50px;
+  margin-bottom: 10px;
+  place-items: center;
+  border-radius: 18px;
+  background: #e0f2fe;
+  font-size: 24px;
+}

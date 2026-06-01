@@ -1,3 +1,4 @@
+import './PayrollSummaryCard.css'
 export function PayrollSummaryCard() {
   return (
     <div className="card payroll-card">

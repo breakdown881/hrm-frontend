@@ -1,3 +1,5 @@
+import './AccessDeniedPage.css'
+import '../components/EmptyState.css'
 import { Link } from 'react-router-dom'
 import type { Module, UserRole } from '../data/hrmData'
 

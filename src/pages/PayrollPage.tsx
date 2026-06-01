@@ -1,3 +1,4 @@
+import '../components/MetricCard.css'
 import type { Module } from '../data/hrmData'
 import { ModuleHero } from '../components/ModuleHero'
 import { PayrollSummaryCard } from '../components/PayrollSummaryCard'

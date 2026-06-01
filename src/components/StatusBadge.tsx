@@ -1,3 +1,4 @@
+import './StatusBadge.css'
 import type { Employee } from '../data/hrmData'
 
 export function StatusBadge({ status }: { status: Employee['status'] }) {

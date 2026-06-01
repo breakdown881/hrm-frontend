@@ -1,3 +1,4 @@
+import './PipelineCard.css'
 import { pipeline } from '../data/hrmData'
 
 export function PipelineCard({ title = 'Hiring pipeline' }: { title?: string }) {

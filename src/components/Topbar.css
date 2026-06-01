@@ -1,0 +1,42 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.role-selector {
+  display: grid;
+  gap: 4px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: left;
+}
+
+.role-selector select {
+  min-height: 42px;
+  padding: 0 36px 0 12px;
+  border: 1px solid rgba(148, 163, 184, 0.34);
+  border-radius: 13px;
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+@media (max-width: 760px) {
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .topbar-actions {
+    width: 100%;
+  }
+}

@@ -1,0 +1,19 @@
+.access-denied-card {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding: 34px;
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  border-radius: 28px;
+  color: #475569;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+
+.access-denied-card h2 {
+  font-size: 34px;
+}
+
+.access-denied-card .empty-icon {
+  background: #fee2e2;
+}

@@ -1,3 +1,4 @@
+import './RequirementsCard.css'
 import type { Module } from '../data/hrmData'
 import { moduleRequirements } from '../data/hrmData'
 

@@ -1,3 +1,4 @@
+import './ApprovalsCard.css'
 import { approvals } from '../data/hrmData'
 
 export function ApprovalsCard() {

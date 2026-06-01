@@ -1,3 +1,4 @@
+import './Sidebar.css'
 import { NavLink } from 'react-router-dom'
 import type { Module } from '../data/hrmData'
 

@@ -1,3 +1,4 @@
+import './EmptyState.css'
 type EmptyStateProps = {
   actionLabel: string
   description: string

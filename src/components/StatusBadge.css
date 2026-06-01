@@ -1,0 +1,24 @@
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 6px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.status-badge.official {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.status-badge.probation {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.status-badge.offboarding {
+  color: #991b1b;
+  background: #fee2e2;
+}

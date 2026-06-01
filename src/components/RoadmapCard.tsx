@@ -1,3 +1,4 @@
+import './RoadmapCard.css'
 import { roadmap } from '../data/hrmData'
 
 export function RoadmapCard() {

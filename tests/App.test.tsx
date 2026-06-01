@@ -90,4 +90,37 @@ describe('HRM route navigation', () => {
     expect(screen.getByRole('heading', { name: /payroll workspace/i })).toBeInTheDocument()
   })
 
+
+  it('filters employees by department and employment status', async () => {
+    const user = userEvent.setup()
+    renderAt('/employees')
+
+    await user.selectOptions(screen.getByRole('combobox', { name: /department filter/i }), 'Engineering')
+
+    expect(screen.getByText(/tran quoc huy/i)).toBeInTheDocument()
+    expect(screen.queryByText(/nguyen minh anh/i)).not.toBeInTheDocument()
+
+    await user.selectOptions(screen.getByRole('combobox', { name: /department filter/i }), 'All departments')
+    await user.selectOptions(screen.getByRole('combobox', { name: /status filter/i }), 'Probation')
+
+    expect(screen.getByText(/le thu ha/i)).toBeInTheDocument()
+    expect(screen.queryByText(/pham gia bao/i)).not.toBeInTheDocument()
+  })
+
+  it('adds a new employee from the directory form', async () => {
+    const user = userEvent.setup()
+    renderAt('/employees')
+
+    await user.click(screen.getByRole('button', { name: /add employee/i }))
+    await user.type(screen.getByRole('textbox', { name: /employee name/i }), 'Doan Lan Chi')
+    await user.type(screen.getByRole('textbox', { name: /job title/i }), 'QA Engineer')
+    await user.selectOptions(screen.getByRole('combobox', { name: /^department$/i }), 'Engineering')
+    await user.type(screen.getByRole('textbox', { name: /manager/i }), 'CTO')
+    await user.click(screen.getByRole('button', { name: /save employee/i }))
+
+    expect(screen.getByRole('status')).toHaveTextContent(/employee created/i)
+    expect(screen.getByText(/doan lan chi/i)).toBeInTheDocument()
+    expect(screen.getByText(/emp-053/i)).toBeInTheDocument()
+  })
+
 })

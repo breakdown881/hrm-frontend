@@ -1,3 +1,4 @@
+import './ModuleHero.css'
 import type { Module } from '../data/hrmData'
 
 export function ModuleHero({ module }: { module: Module }) {
