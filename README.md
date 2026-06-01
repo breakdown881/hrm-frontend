@@ -1,91 +1,132 @@
 ﻿# HRM System
 
-HRM System là giao diện web quản trị nhân sự cho doanh nghiệp vừa, tập trung vào **Full HR Workflow**: quản lý tổ chức, nhân viên, hợp đồng, chấm công, nghỉ phép, thông báo, payroll và phân quyền theo vai trò.
+HRM System là giao diện web quản trị nhân sự cho doanh nghiệp vừa, tập trung vào **Full HR Workflow**: authentication/RBAC, dashboard, organization, employee profiles, contracts, recruitment, onboarding, attendance, leave, approvals, notifications, performance, payroll, reports, settings và audit/security.
 
-Dự án được xây dựng bằng React + TypeScript + Vite, có routing bằng `react-router-dom` và được phát triển theo hướng **TDD** với Vitest + Testing Library.
+Dự án được xây dựng bằng **React + TypeScript + Vite**, routing bằng `react-router-dom`, và được phát triển theo hướng **TDD** với Vitest + Testing Library.
 
 ## Tính năng đã implement
 
-### Foundation
+### Authentication & Authorization
 
-- Layout chính gồm sidebar, topbar và content workspace.
-- Điều hướng theo route với `react-router-dom`.
-- Role selector để mô phỏng quyền truy cập.
-- RBAC cơ bản theo vai trò:
+- Trang `/login` cho đăng nhập mock.
+- Đăng xuất từ topbar.
+- Đổi mật khẩu mock.
+- Quản lý session ở UI state.
+- Role selector mô phỏng vai trò hiện tại.
+- RBAC theo vai trò:
   - Admin
   - HR
   - Manager
   - Employee
   - Payroll/Finance
-- Trang `Access Denied` khi role không đủ quyền.
-- CSS đã được tách theo page/component để tránh một file `App.css` quá lớn.
+- Ẩn navigation item theo quyền.
+- Route guard cho module không đủ quyền.
+- Trang `Access Denied` hiển thị role và module bị chặn.
 
 ### Dashboard
 
-- Dashboard overview cho HR/Admin.
-- Metric cards cho employees, approvals và payroll status.
-- Hiring pipeline.
+- Dashboard overview cho Admin/HR.
+- Metric cards cho headcount, approvals, payroll và hiring.
+- Hiring pipeline summary.
 - Pending approvals summary.
 - Payroll summary card.
-- Phase roadmap từ `REQUIREMENT.md`.
 
 ### Organization Management
 
 - Quản lý danh sách phòng ban.
 - Thêm phòng ban mới.
 - Gán manager cho phòng ban.
-- Hiển thị role/job title catalog.
+- Hiển thị job title/role catalog.
 - Summary cards cho departments, job titles và headcount.
 
 ### Employee Management
 
 - Danh sách nhân viên.
-- Search nhân viên.
+- Search nhân viên theo mã, tên, chức danh, phòng ban, manager.
 - Filter theo department và employment status.
 - Empty state khi không có kết quả.
-- Thêm nhân viên mới từ form.
-- Sinh mã nhân viên tiếp theo dạng `EMP-###`.
+- Thêm nhân viên mới.
+- Sinh mã nhân viên dạng `EMP-###`.
+- Xem chi tiết nhân viên từ directory.
+- Sửa thông tin hồ sơ nhân viên.
+- Quản lý thông tin cá nhân:
+  - Họ tên
+  - Ngày sinh
+  - Giới tính
+  - Email
+  - Số điện thoại
+  - Địa chỉ
+  - Avatar initials
+- Quản lý thông tin công việc:
+  - Mã nhân viên
+  - Phòng ban
+  - Chức danh
+  - Manager trực tiếp
+  - Ngày bắt đầu làm việc
+  - Loại nhân viên
+  - Trạng thái làm việc
+- Quản lý liên hệ khẩn cấp.
 
-### Settings & Master Data
+### Contract Management
 
-- Quản lý leave types.
-- Thêm leave type mới.
-- Hiển thị contract types.
-- Hiển thị holidays.
-- Summary cards cho master data.
+- Route `/contracts`.
+- Contract registry.
+- Tạo hợp đồng mới cho nhân viên.
+- Theo dõi loại hợp đồng, start date, end date và status.
+- Status: `Active`, `Expiring soon`, `Expired`.
+- Expiry watchlist cho hợp đồng sắp hết hạn.
 
-### Leave Management
+### Recruitment Management
 
-- Trang Leave Management riêng.
-- Danh sách leave requests.
-- Tạo leave request mới.
-- Approve/reject request pending.
-- Theo dõi remaining leave balance theo nhân viên.
-- Summary pending approvals, approved days và leave types.
+- Route `/recruitment`.
+- Quản lý job openings.
+- Tạo job opening mới.
+- Quản lý candidate pipeline.
+- Tạo candidate mới với thông tin liên hệ, vị trí ứng tuyển, nguồn ứng viên và trạng thái.
+- Pipeline stages: Applied, Screening, Interview, Offer, Hired, Rejected.
+- Convert hired candidate thành employee record mock.
+- Hiển thị danh sách converted employees.
+
+### Onboarding Management
+
+- Route `/onboarding`.
+- New hire checklist.
+- Tạo onboarding task mới.
+- Gán new hire và task owner.
+- Mark task as completed.
+- Theo dõi trạng thái onboarding task.
 
 ### Attendance Management
 
-- Trang Attendance Management riêng.
+- Route `/attendance`.
 - Company timesheet table.
 - Thêm attendance record mới.
 - Theo dõi check-in/check-out theo ngày.
 - Trạng thái attendance: On time, Late, Remote, Missing checkout.
 - Standard working hours card.
 
-### Contract Management
+### Leave Management
 
-- Module và route `/contracts`.
-- Contract registry.
-- Thêm hợp đồng mới cho nhân viên.
-- Theo dõi loại hợp đồng, start date, end date và status.
-- Status: Active, Expiring soon, Expired.
-- Expiry watchlist cho hợp đồng sắp hết hạn.
+- Route `/leave`.
+- Danh sách leave requests.
+- Tạo leave request mới.
+- Approve/reject pending request.
+- Theo dõi remaining leave balance theo nhân viên.
+- Summary pending approvals, approved days và leave types.
+
+### Request & Approval Workflow
+
+- Route `/approvals`.
+- Pending request queue.
+- Approve/reject request với decision note.
+- Lưu decision history trong UI state.
+- Hỗ trợ leave request và timesheet adjustment mock.
 
 ### Notifications
 
-- Module và route `/notifications`.
-- Notification center cho thông báo trong hệ thống.
-- Các notification mẫu:
+- Route `/notifications`.
+- Notification center cho in-system alerts.
+- Notification mẫu:
   - Contract expiring soon
   - Onboarding task assigned
   - Leave request approved
@@ -93,30 +134,83 @@ Dự án được xây dựng bằng React + TypeScript + Vite, có routing bằ
 - Summary unread/total alerts.
 - Notification trigger list.
 
-### Payroll
+### Performance Management
 
+- Route `/performance`.
+- Review cycles summary.
+- Evaluation history.
+- Tạo review record mới.
+- Lưu self review score, manager review score và manager comment.
+- Tính/hiển thị review data trong bảng.
+
+### Payroll Management
+
+- Route `/payroll`.
 - Payroll workspace có bảo vệ quyền truy cập.
 - Payroll chỉ hiển thị cho Admin hoặc Payroll/Finance.
-- Nội dung cảnh báo dữ liệu lương là dữ liệu nhạy cảm.
+- Tạo payroll run theo tháng.
+- Tính net pay dựa trên:
+  - Basic salary
+  - Working days
+  - Unpaid leave days
+  - Allowances
+  - Deductions
+- Payslip preview.
+- Lock payroll cycle.
+- Cảnh báo dữ liệu lương là dữ liệu nhạy cảm.
+
+### Reports & Analytics
+
+- Route `/reports`.
+- Report builder.
+- Filter theo department/status.
+- Generate report preview.
+- Export current report mock.
+- Các report type cơ bản cho headcount, leave, attendance và payroll overview.
+
+### Settings & Master Data
+
+- Route `/settings`.
+- Quản lý leave types.
+- Thêm leave type mới.
+- Hiển thị contract types.
+- Cấu hình working calendar:
+  - Workdays
+  - Standard working hours
+- Quản lý holidays.
+- Thêm holiday mới.
+- Summary cards cho leave types, contract types và holidays.
+
+### Audit Log & Security
+
+- Route `/audit`.
+- Audit log table/list.
+- Filter audit logs theo module.
+- Security controls summary.
+- Record sensitive action mock.
+- Nhấn mạnh kiểm soát truy cập với payroll/contracts/employees.
 
 ## Routes chính
 
-| Route | Mô tả |
-|---|---|
-| `/dashboard` | Dashboard tổng quan |
-| `/organization` | Quản lý phòng ban và role catalog |
-| `/employees` | Quản lý danh sách nhân viên |
-| `/contracts` | Quản lý hợp đồng lao động |
-| `/attendance` | Quản lý chấm công |
-| `/leave` | Quản lý nghỉ phép và phê duyệt |
-| `/notifications` | Trung tâm thông báo |
-| `/payroll` | Payroll workspace có phân quyền |
-| `/settings` | Master data và cấu hình cơ bản |
-| `/recruitment` | Placeholder workflow module |
-| `/onboarding` | Placeholder workflow module |
-| `/performance` | Placeholder workflow module |
-| `/reports` | Placeholder workflow module |
-| `/audit` | Placeholder audit/security module |
+| Route | Mô tả | Quyền truy cập mock |
+|---|---|---|
+| `/` | Redirect sang dashboard | Authenticated |
+| `/login` | Authentication | Public |
+| `/dashboard` | Dashboard tổng quan | Admin, HR, Manager, Employee, Payroll/Finance |
+| `/organization` | Quản lý phòng ban, job titles, managers | Admin, HR |
+| `/employees` | Quản lý danh sách và hồ sơ nhân viên | Admin, HR, Manager, Payroll/Finance |
+| `/contracts` | Quản lý hợp đồng lao động | Admin, HR |
+| `/recruitment` | Job openings, candidates, hired-to-employee conversion | Admin, HR, Manager |
+| `/onboarding` | New hire checklist và task owner | Admin, HR, Manager |
+| `/attendance` | Timesheet và attendance records | Admin, HR, Manager, Employee, Payroll/Finance |
+| `/leave` | Leave requests, balances, approve/reject | Admin, HR, Manager, Employee, Payroll/Finance |
+| `/notifications` | Notification center | Admin, HR, Manager, Employee, Payroll/Finance |
+| `/approvals` | Central approval queue | Admin, HR, Manager |
+| `/performance` | Review cycles và evaluations | Admin, HR, Manager, Employee |
+| `/payroll` | Payroll runs, payslip, lock cycle | Admin, Payroll/Finance |
+| `/reports` | Reports & analytics | Admin, HR, Manager, Payroll/Finance |
+| `/settings` | Master data và working calendar | Admin, HR |
+| `/audit` | Audit log & security controls | Admin |
 
 ## Công nghệ sử dụng
 
@@ -157,8 +251,10 @@ http://localhost:5173
 Dự án đang dùng TDD cho các slice chức năng:
 
 1. Viết failing test mô tả user flow.
-2. Implement tối thiểu để test xanh.
-3. Chạy full verification.
+2. Chạy test để xác nhận trạng thái đỏ.
+3. Implement tối thiểu để test xanh.
+4. Chạy targeted test.
+5. Chạy full verification: test, lint, build.
 
 Các test chính nằm tại:
 
@@ -167,28 +263,14 @@ tests/App.test.tsx
 tests/StyleArchitecture.test.ts
 ```
 
-Các luồng đã có test bao gồm:
-
-- Redirect `/` sang dashboard.
-- Route navigation và active sidebar link.
-- RBAC cho Payroll.
-- Employee search/filter/add flow.
-- Organization add department flow.
-- Settings add leave type flow.
-- Leave submit/approve flow.
-- Attendance add record flow.
-- Contract create flow.
-- Notifications mark-as-read flow.
-- CSS architecture guard để giữ style theo page/component.
-
 ## Cấu trúc thư mục
 
 ```text
 src/
-  components/      Shared UI components
+  components/      Shared UI components và component-specific CSS
   data/            Mock HRM data, modules, roles, permissions
-  pages/           Page-level modules and page-specific CSS
-  App.tsx          App shell, routes, RBAC route guard
+  pages/           Page-level modules và page-specific CSS
+  App.tsx          App shell, routes, session state, RBAC route guard
   App.css          Global/shared styles only
 
 tests/
